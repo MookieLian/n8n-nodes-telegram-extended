@@ -1,7 +1,7 @@
 {
     "name": "n8n-nodes-telegram-extended",
     "version": "0.1.0",
-    "description": "",
+    "description": "n8n Node for Telegram Extended",
     "license": "MIT",
     "homepage": "",
     "keywords": ["n8n-community-node-package"],
@@ -23,7 +23,7 @@
     "n8n": {
         "n8nNodesApiVersion": 1,
         "strict": true,
-        "credentials": [],
+        "credentials": ["dist/credentials/TelegramExtendedApi.credentials.js"],
         "nodes": ["dist/nodes/Telegram-Extended/TelegramExtended.node.js"]
     },
     "devDependencies": {

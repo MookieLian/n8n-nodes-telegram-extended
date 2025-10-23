@@ -1,4 +1,4 @@
-import { type INodeType, type INodeTypeDescription, type INodeExecutionData, type IExecuteFunctions, NodeConnectionTypes } from 'n8n-workflow';
+import { type IDataObject, type INodeType, type INodeTypeDescription, type INodeExecutionData, type IExecuteFunctions, NodeConnectionTypes, NodeApiError } from 'n8n-workflow';
 
 export class TelegramExtended implements INodeType {
 	description: INodeTypeDescription = {
@@ -17,7 +17,7 @@ export class TelegramExtended implements INodeType {
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
-				name: 'telegramApi',
+				name: 'telegramExtendedApi',
 				required: true,
 			},
 		],
@@ -71,46 +71,10 @@ export class TelegramExtended implements INodeType {
 				},
 				options: [
 					{
-						name: 'Create Forum Topic',
-						value: 'createForumTopic',
-						description: 'Create a new forum topic',
-						action: 'Create a forum topic',
-					},
-					{
-						name: 'Edit Forum Topic',
-						value: 'editForumTopic',
-						description: 'Edit an existing forum topic',
-						action: 'Edit a forum topic',
-					},
-					{
 						name: 'Close Forum Topic',
 						value: 'closeForumTopic',
 						description: 'Close a forum topic',
 						action: 'Close a forum topic',
-					},
-					{
-						name: 'Delete Forum Topic',
-						value: 'deleteForumTopic',
-						description: 'Delete a forum topic',
-						action: 'Delete a forum topic',
-					},
-					{
-						name: 'Reopen Forum Topic',
-						value: 'reopenForumTopic',
-						description: 'Reopen a closed forum topic',
-						action: 'Reopen a forum topic',
-					},
-					{
-						name: 'Unpin All Forum Topic Messages',
-						value: 'unpinAllForumTopicMessages',
-						description: 'Clear the list of pinned messages in a forum topic',
-						action: 'Unpin all forum topic messages',
-					},
-					{
-						name: 'Edit General Forum Topic',
-						value: 'editGeneralForumTopic',
-						description: 'Edit the name of the general topic in a forum supergroup chat',
-						action: 'Edit general forum topic',
 					},
 					{
 						name: 'Close General Forum Topic',
@@ -119,10 +83,28 @@ export class TelegramExtended implements INodeType {
 						action: 'Close general forum topic',
 					},
 					{
-						name: 'Reopen General Forum Topic',
-						value: 'reopenGeneralForumTopic',
-						description: 'Reopen the general topic in a forum supergroup chat',
-						action: 'Reopen general forum topic',
+						name: 'Create Forum Topic',
+						value: 'createForumTopic',
+						description: 'Create a new forum topic',
+						action: 'Create a forum topic',
+					},
+					{
+						name: 'Delete Forum Topic',
+						value: 'deleteForumTopic',
+						description: 'Delete a forum topic',
+						action: 'Delete a forum topic',
+					},
+					{
+						name: 'Edit Forum Topic',
+						value: 'editForumTopic',
+						description: 'Edit an existing forum topic',
+						action: 'Edit a forum topic',
+					},
+					{
+						name: 'Edit General Forum Topic',
+						value: 'editGeneralForumTopic',
+						description: 'Edit the name of the general topic in a forum supergroup chat',
+						action: 'Edit general forum topic',
 					},
 					{
 						name: 'Hide General Forum Topic',
@@ -131,10 +113,28 @@ export class TelegramExtended implements INodeType {
 						action: 'Hide general forum topic',
 					},
 					{
+						name: 'Reopen Forum Topic',
+						value: 'reopenForumTopic',
+						description: 'Reopen a closed forum topic',
+						action: 'Reopen a forum topic',
+					},
+					{
+						name: 'Reopen General Forum Topic',
+						value: 'reopenGeneralForumTopic',
+						description: 'Reopen the general topic in a forum supergroup chat',
+						action: 'Reopen general forum topic',
+					},
+					{
 						name: 'Unhide General Forum Topic',
 						value: 'unhideGeneralForumTopic',
 						description: 'Unhide the general topic in a forum supergroup chat',
 						action: 'Unhide general forum topic',
+					},
+					{
+						name: 'Unpin All Forum Topic Messages',
+						value: 'unpinAllForumTopicMessages',
+						description: 'Clear the list of pinned messages in a forum topic',
+						action: 'Unpin all forum topic messages',
 					},
 					{
 						name: 'Unpin All General Forum Topic Messages',
@@ -250,18 +250,18 @@ export class TelegramExtended implements INodeType {
 				default: {},
 				options: [
 					{
-						displayName: 'Icon Color',
-						name: 'icon_color',
-						type: 'number',
-						default: 0,
-						description: 'Color of the topic icon in RGB format',
-					},
-					{
 						displayName: 'Icon Custom Emoji ID',
 						name: 'icon_custom_emoji_id',
 						type: 'string',
 						default: '',
 						description: 'Custom emoji identifier of the topic icon',
+					},
+					{
+						displayName: 'Icon Color',
+						name: 'icon_color',
+						type: 'number',
+						default: 0,
+						description: 'Color of the topic icon in RGB format',
 					},
 				],
 			},
@@ -273,15 +273,15 @@ export class TelegramExtended implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
+			const resource = this.getNodeParameter('resource', i) as string;
+			const operation = this.getNodeParameter('operation', i) as string;
 			try {
-				const resource = this.getNodeParameter('resource', i) as string;
-				const operation = this.getNodeParameter('operation', i) as string;
 				const chatId = this.getNodeParameter('chatId', i) as string;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+				const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-				const credentials = await this.getCredentials('telegramApi');
+				const credentials = await this.getCredentials('telegramExtendedApi');
 				let endpoint = '';
-				let body: any = {
+				const body: IDataObject = {
 					chat_id: chatId,
 					...additionalFields,
 				};
@@ -298,12 +298,18 @@ export class TelegramExtended implements INodeType {
 					if (operation === 'createForumTopic') {
 						endpoint = 'createForumTopic';
 						const name = this.getNodeParameter('name', i) as string;
+						const icon_color = additionalFields.icon_color as number;
+						const icon_custom_emoji_id = additionalFields.icon_custom_emoji_id as string;
 						body.name = name;
+						body.icon_color = icon_color;
+						body.icon_custom_emoji_id = icon_custom_emoji_id;
 					} else if (operation === 'editForumTopic') {
 						endpoint = 'editForumTopic';
 						const messageThreadId = this.getNodeParameter('messageThreadId', i) as string;
+						const icon_custom_emoji_id = additionalFields.icon_custom_emoji_id as string;
 						const name = this.getNodeParameter('name', i) as string;
 						body.message_thread_id = parseInt(messageThreadId);
+						body.icon_custom_emoji_id = icon_custom_emoji_id;
 						body.name = name;
 					} else if (operation === 'closeForumTopic') {
 						endpoint = 'closeForumTopic';
@@ -350,16 +356,15 @@ export class TelegramExtended implements INodeType {
 				});
 			} catch (error) {
 				if (this.continueOnFail()) {
+					const errorMessage =   error as unknown as NodeApiError;
 					returnData.push({
-						json: { error: error.message },
+						json: { error: errorMessage.message },
 						pairedItem: { item: i },
 					});
-				} else {
-					throw error;
 				}
+				throw error;
 			}
 		}
-
 		return [returnData];
 	}
 }

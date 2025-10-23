@@ -20,7 +20,7 @@ class TelegramExtended {
             outputs: [n8n_workflow_1.NodeConnectionTypes.Main],
             credentials: [
                 {
-                    name: 'telegramApi',
+                    name: 'telegramExtendedApi',
                     required: true,
                 },
             ],
@@ -74,46 +74,10 @@ class TelegramExtended {
                     },
                     options: [
                         {
-                            name: 'Create Forum Topic',
-                            value: 'createForumTopic',
-                            description: 'Create a new forum topic',
-                            action: 'Create a forum topic',
-                        },
-                        {
-                            name: 'Edit Forum Topic',
-                            value: 'editForumTopic',
-                            description: 'Edit an existing forum topic',
-                            action: 'Edit a forum topic',
-                        },
-                        {
                             name: 'Close Forum Topic',
                             value: 'closeForumTopic',
                             description: 'Close a forum topic',
                             action: 'Close a forum topic',
-                        },
-                        {
-                            name: 'Delete Forum Topic',
-                            value: 'deleteForumTopic',
-                            description: 'Delete a forum topic',
-                            action: 'Delete a forum topic',
-                        },
-                        {
-                            name: 'Reopen Forum Topic',
-                            value: 'reopenForumTopic',
-                            description: 'Reopen a closed forum topic',
-                            action: 'Reopen a forum topic',
-                        },
-                        {
-                            name: 'Unpin All Forum Topic Messages',
-                            value: 'unpinAllForumTopicMessages',
-                            description: 'Clear the list of pinned messages in a forum topic',
-                            action: 'Unpin all forum topic messages',
-                        },
-                        {
-                            name: 'Edit General Forum Topic',
-                            value: 'editGeneralForumTopic',
-                            description: 'Edit the name of the general topic in a forum supergroup chat',
-                            action: 'Edit general forum topic',
                         },
                         {
                             name: 'Close General Forum Topic',
@@ -122,10 +86,28 @@ class TelegramExtended {
                             action: 'Close general forum topic',
                         },
                         {
-                            name: 'Reopen General Forum Topic',
-                            value: 'reopenGeneralForumTopic',
-                            description: 'Reopen the general topic in a forum supergroup chat',
-                            action: 'Reopen general forum topic',
+                            name: 'Create Forum Topic',
+                            value: 'createForumTopic',
+                            description: 'Create a new forum topic',
+                            action: 'Create a forum topic',
+                        },
+                        {
+                            name: 'Delete Forum Topic',
+                            value: 'deleteForumTopic',
+                            description: 'Delete a forum topic',
+                            action: 'Delete a forum topic',
+                        },
+                        {
+                            name: 'Edit Forum Topic',
+                            value: 'editForumTopic',
+                            description: 'Edit an existing forum topic',
+                            action: 'Edit a forum topic',
+                        },
+                        {
+                            name: 'Edit General Forum Topic',
+                            value: 'editGeneralForumTopic',
+                            description: 'Edit the name of the general topic in a forum supergroup chat',
+                            action: 'Edit general forum topic',
                         },
                         {
                             name: 'Hide General Forum Topic',
@@ -134,10 +116,28 @@ class TelegramExtended {
                             action: 'Hide general forum topic',
                         },
                         {
+                            name: 'Reopen Forum Topic',
+                            value: 'reopenForumTopic',
+                            description: 'Reopen a closed forum topic',
+                            action: 'Reopen a forum topic',
+                        },
+                        {
+                            name: 'Reopen General Forum Topic',
+                            value: 'reopenGeneralForumTopic',
+                            description: 'Reopen the general topic in a forum supergroup chat',
+                            action: 'Reopen general forum topic',
+                        },
+                        {
                             name: 'Unhide General Forum Topic',
                             value: 'unhideGeneralForumTopic',
                             description: 'Unhide the general topic in a forum supergroup chat',
                             action: 'Unhide general forum topic',
+                        },
+                        {
+                            name: 'Unpin All Forum Topic Messages',
+                            value: 'unpinAllForumTopicMessages',
+                            description: 'Clear the list of pinned messages in a forum topic',
+                            action: 'Unpin all forum topic messages',
                         },
                         {
                             name: 'Unpin All General Forum Topic Messages',
@@ -253,18 +253,18 @@ class TelegramExtended {
                     default: {},
                     options: [
                         {
-                            displayName: 'Icon Color',
-                            name: 'icon_color',
-                            type: 'number',
-                            default: 0,
-                            description: 'Color of the topic icon in RGB format',
-                        },
-                        {
                             displayName: 'Icon Custom Emoji ID',
                             name: 'icon_custom_emoji_id',
                             type: 'string',
                             default: '',
                             description: 'Custom emoji identifier of the topic icon',
+                        },
+                        {
+                            displayName: 'Icon Color',
+                            name: 'icon_color',
+                            type: 'number',
+                            default: 0,
+                            description: 'Color of the topic icon in RGB format',
                         },
                     ],
                 },
@@ -275,14 +275,14 @@ class TelegramExtended {
         const items = this.getInputData();
         const returnData = [];
         for (let i = 0; i < items.length; i++) {
+            const resource = this.getNodeParameter('resource', i);
+            const operation = this.getNodeParameter('operation', i);
             try {
-                const resource = this.getNodeParameter('resource', i);
-                const operation = this.getNodeParameter('operation', i);
                 const chatId = this.getNodeParameter('chatId', i);
                 const additionalFields = this.getNodeParameter('additionalFields', i);
-                const credentials = await this.getCredentials('telegramApi');
+                const credentials = await this.getCredentials('telegramExtendedApi');
                 let endpoint = '';
-                let body = {
+                const body = {
                     chat_id: chatId,
                     ...additionalFields,
                 };
@@ -299,13 +299,19 @@ class TelegramExtended {
                     if (operation === 'createForumTopic') {
                         endpoint = 'createForumTopic';
                         const name = this.getNodeParameter('name', i);
+                        const icon_color = additionalFields.icon_color;
+                        const icon_custom_emoji_id = additionalFields.icon_custom_emoji_id;
                         body.name = name;
+                        body.icon_color = icon_color;
+                        body.icon_custom_emoji_id = icon_custom_emoji_id;
                     }
                     else if (operation === 'editForumTopic') {
                         endpoint = 'editForumTopic';
                         const messageThreadId = this.getNodeParameter('messageThreadId', i);
+                        const icon_custom_emoji_id = additionalFields.icon_custom_emoji_id;
                         const name = this.getNodeParameter('name', i);
                         body.message_thread_id = parseInt(messageThreadId);
+                        body.icon_custom_emoji_id = icon_custom_emoji_id;
                         body.name = name;
                     }
                     else if (operation === 'closeForumTopic') {
@@ -361,14 +367,13 @@ class TelegramExtended {
             }
             catch (error) {
                 if (this.continueOnFail()) {
+                    const errorMessage = error;
                     returnData.push({
-                        json: { error: error.message },
+                        json: { error: errorMessage.message },
                         pairedItem: { item: i },
                     });
                 }
-                else {
-                    throw error;
-                }
+                throw error;
             }
         }
         return [returnData];
