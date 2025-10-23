@@ -24,7 +24,7 @@
         "n8nNodesApiVersion": 1,
         "strict": true,
         "credentials": ["dist/credentials/TelegramExtendedApi.credentials.js"],
-        "nodes": ["dist/nodes/Telegram-Extended/TelegramExtended.node.js"]
+        "nodes": ["dist/nodes/TelegramExtended/TelegramExtended.node.js"]
     },
     "devDependencies": {
         "@n8n/node-cli": "*",
