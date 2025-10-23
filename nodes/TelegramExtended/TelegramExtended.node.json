@@ -1,0 +1,30 @@
+{
+	"node": "n8n-nodes-telegram-extended",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://docs.n8n.io/integrations/builtin/credentials/telegram/"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.telegram/"
+			}
+		],
+		"generic": [
+			{
+				"label": "Telegram Bot API Documentation",
+				"icon": "📚",
+				"url": "https://core.telegram.org/bots/api"
+			},
+			{
+				"label": "Forum Topics in Telegram",
+				"icon": "💬",
+				"url": "https://core.telegram.org/bots/api#forum-topics"
+			}
+		]
+	}
+}
